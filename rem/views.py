@@ -3,12 +3,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from django.shortcuts import render
 from rest_framework import viewsets, serializers, status
-from .models import Client, Order, Speciality, Master
 from .serializers import ClientSerializer, SpecialitySerializer, OrderSerializer, MasterSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Count
-
+from django.db.models import Count, Q
+from django.utils import timezone
+from .models import Client, Order, Speciality, Master
 
 # Create your views here.
 class OrderPriceSerializer(serializers.ModelSerializer):
@@ -55,7 +55,28 @@ class MasterViewSet(viewsets.ModelViewSet):
                 "Статистика по специальностям": speciality_count,
             }
         )
+    
+    @action(methods=["GET"], detail=False)
+    def pro(self, request):
+        professionals = Master.objects.filter(
+            ((Q(speciality__name='Электрик') | Q(speciality__name='Маляр')) & Q(rating__gte=4)) &
+            ~Q(order__id_user__email__endswith="gmail.com")
+        )
+        professionals2 = Master.objects.filter(
+            ((Q(speciality__name='Сантехник') | Q(speciality__name='Плотник')) & Q(rating__lte=3)) &
+            ~Q(order__id_user__email__endswith="mail.ru")
+        )
 
+       
+        serializer1 = MasterSerializer(professionals, many=True)
+        serializer2 = MasterSerializer(professionals2, many=True)
+
+        return Response(
+            {
+                "Мастеры (электрики или маляры) с рейтингом выше или равно 4. Почта клиентов не оканчивается на 'gmail.com'": serializer1.data,
+                "Мастеры (сантехники или плотники) с рейтингом ниже или равно 3. Почта клиентов не оканчивается на 'mail.ru'": serializer2.data,
+            }
+        )
 
 
 class SpecialityViewSet(viewsets.ModelViewSet):
@@ -87,3 +108,9 @@ class OrderViewSet(viewsets.ModelViewSet):
         if self.action == "change_price":
             return OrderPriceSerializer
         return super().get_serializer_class()
+    
+    
+    
+
+    
+    
