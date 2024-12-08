@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Client, Master, Order, Speciality
+from .models import Client, Master, Order, Speciality, Service, Review
 
 class ClientSerializer(serializers.ModelSerializer):
 
@@ -45,3 +45,18 @@ class SpecialitySerializer(serializers.ModelSerializer):
 
         model = Speciality
         fields = "__all__"                
+
+class ServiceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = Service
+        fields = "__all__"   
+
+class ReviewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = Review
+        fields = "__all__"   
+

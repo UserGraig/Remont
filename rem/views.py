@@ -3,12 +3,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from django.shortcuts import render
 from rest_framework import viewsets, serializers, status
-from .serializers import ClientSerializer, SpecialitySerializer, OrderSerializer, MasterSerializer
+from .serializers import ClientSerializer, SpecialitySerializer, OrderSerializer, MasterSerializer,  ServiceSerializer, ReviewSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Count, Q
 from django.utils import timezone
-from .models import Client, Order, Speciality, Master
+from .models import Client, Order, Speciality, Master, Service, Review
 
 # Create your views here.
 class OrderPriceSerializer(serializers.ModelSerializer):
@@ -108,6 +108,18 @@ class OrderViewSet(viewsets.ModelViewSet):
         if self.action == "change_price":
             return OrderPriceSerializer
         return super().get_serializer_class()
+    
+
+class ServiceViewSet(viewsets.ModelViewSet):
+
+    queryset = Service.objects.all()
+    serializer_class = ServiceSerializer
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
     
     
     
