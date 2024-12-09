@@ -15,6 +15,3 @@ router.register("reviews", views.ReviewViewSet)
 urlpatterns = [
     path("api/", include(router.urls)),
 ]
-
-
-
