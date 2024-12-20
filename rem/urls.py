@@ -1,8 +1,12 @@
+"""
+Этот файл содержит маршруты приложения для API.
+"""
+
 from django.urls import path, include
 from rest_framework import routers
-from . import views
+from rem import views  # Замените 'app_name' на название вашего приложения
 
-app_name = "rem"
+APP_NAME = "rem"
 
 router = routers.DefaultRouter()
 router.register("masters", views.MasterViewSet)

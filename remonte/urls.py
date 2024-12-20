@@ -14,12 +14,16 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
+from rest_framework.permissions import AllowAny
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 from rem import views
 
-app_name = "rem"
+APP_NAME = "rem"  # Renommé selon les conventions de Python
 
 router = routers.DefaultRouter()
 router.register("masters", views.MasterViewSet)
@@ -29,12 +33,22 @@ router.register("orders", views.OrderViewSet)
 router.register("services", views.ServiceViewSet)
 router.register("reviews", views.ReviewViewSet)
 
+schema_view = get_schema_view(  # Utiliser une convention de nommage pour les variables
+    openapi.Info(
+        title="Snippets API",
+        default_version='v1',
+        description="Test description",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="contact@snippets.local"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=[AllowAny],
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/", include(router.urls)),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
-
-
-
 

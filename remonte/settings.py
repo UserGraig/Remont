@@ -12,23 +12,21 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Определяем базовый каталог проекта
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Быстрые настройки для разработки - неподходящие для продакшена
+# Смотрите https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
+# ВНИМАНИЕ БЕЗОПАСНОСТИ: держите секретный ключ, используемый в производстве, в тайне!
 SECRET_KEY = 'django-insecure-o4^*=+6k_p1*gsw1n3m-9-vt_*^@89&z34kg-s^b1u$a$oj#0j'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# ВНИМАНИЕ БЕЗОПАСНОСТИ: не запускайте с включенной отладкой в производстве!
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1']
 
-
-# Application definition
+# Определение приложений
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -41,7 +39,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'import_export',
     'django_filters',
+    'drf_yasg',
     'simple_history',
+    'django_redis',
 ]
 
 MIDDLEWARE = [
@@ -76,7 +76,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'remonte.wsgi.application'
 
 
-# Database
+# Настройки базы данных
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
@@ -87,7 +87,7 @@ DATABASES = {
 }
 
 
-# Password validation
+# Проверка паролей
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -106,7 +106,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
+# Интернационализация
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
 LANGUAGE_CODE = 'ru-ru'
@@ -118,13 +118,13 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
+# Статические файлы (CSS, JavaScript, Изображения)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'static' 
 
-# Default primary key field type
+# Тип поля по умолчанию для первичного ключа
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -135,3 +135,29 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
 
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'send-reminder-every-day': {
+        'task': 'rem.tasks.send_reminder_email',
+        'schedule': crontab(hour=9, minute=0),  # каждый день в 09:00
+    },
+    'cleanup-orders-every-night': {
+        'task': 'rem.tasks.cleanup_old_orders',
+        'schedule': crontab(hour=0, minute=0),  # каждый день в полночь
+    },
+}
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 1025  # Порт MailHog
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
